@@ -2,6 +2,12 @@ const express= require("express");
 
 const mongoose= require("mongoose");
 
+const User= require("./modules/user.module");
+const BankDetail= require("./modules/bank.module");
+const MasterAccount= require("./modules/master.module");
+const SavingsAccount= require("./modules/saving.module");
+const FixedAccount= require("./modules/fixed.module");
+
 const app= express();
 app.use(express.json());
 
@@ -9,21 +15,6 @@ const Connect=()=> mongoose.connect(
     "mongodb+srv://Akash:Akash_7492@cluster0.doylh.mongodb.net/Bank?retryWrites=true&w=majority"
 )
 // User -------------------------------------------------------------------------
-const UserSchema= new mongoose.Schema({
-    "firstName": {type:String, required:true},
-  "middleName": {type:String, required:false},
-  "lastName": {type:String, required:true},
-  "age": {type:Number, required:true},
-  "email": {type:String, required:true},
-  "address": {type:String, required:true},
-  "gender": {type:String, required:false, default:"Female"},
-  "type": {type:String, required:false,}
-},{
-    versionKey:false,
-    timestamps: true
-});
-
-const User= mongoose.model("user", UserSchema);
 
 // ---------------------------------------->>>>
 
@@ -86,18 +77,6 @@ app.delete("/user/:id", async(req,res)=>{
 
 // BankDetails -------------------------------------------------------------------------
 
-const BankDetailSchema= new mongoose.Schema({
-    "name": {type:String, required:true},
-  "address": {type:String, required:false},
-  "IFSC": {type:String, required:true},
-  "MICR": {type:Number, required:true}
-},{
-    versionKey:false,
-    timestamps: true
-});
-
-const BankDetail= mongoose.model("detail", BankDetailSchema);
-
 // ---------------------------------------->>>>
 // get, getAll, post, patch, delete
 
@@ -157,23 +136,13 @@ app.delete("/bank/:id", async(req,res)=>{
 });
 
 // Master Account -----------------------------------------------------------------------------
-const MasterAccountSchema= new mongoose.Schema({
-    "balance": {type:Number, required:true},
-    "User_Id": {type:mongoose.Schema.Types.ObjectId, ref:"user", required:true},
-    "Branch_Id":{type: mongoose.Schema.Types.ObjectId, ref:"detail", required:true}
-},{
-    versionKey:false,
-    timestamps: true
-});
-
-const MasterAccount= mongoose.model("master", MasterAccountSchema);
 
 // ---------------------------------------->>>>
 // get, getAll, post, patch, delete
 
 app.get("/master/:id", async(req, res)=>{
     try{
-        const master= await MasterAccount.findById(req.params.id).populate({path: "user"}).lean().exec();
+        const master= await MasterAccount.findById(req.params.id).populate({type:mongoose.Schema.Types.ObjectId, path: "user"}).lean().exec();
 
         return res.send(master);
     }
@@ -184,7 +153,7 @@ app.get("/master/:id", async(req, res)=>{
 
 app.get("/master", async(req, res)=>{
     try{
-        const master= await MasterAccount.find().lean().exec();
+        const master= await MasterAccount.find().populate({type:mongoose.Schema.Types.ObjectId, path: "user"}).lean().exec();
 
         return res.send(master);
     }
@@ -228,19 +197,6 @@ app.delete("/master/:id", async(req,res)=>{
 
 
 // SavingsAccount -------------------------------------------------------------------------------------
-
-const SavingsAccountSchema= new mongoose.Schema({
-    "account_number": {required:true, type:Number, unique:true},
-    "balance":{required:true, type: Number},
-    "interestRate":{type:Number, required:true},
-    "Master_Id": {type:mongoose.Schema.Types.ObjectId, ref:"master", required:true}
-},
-{
-    versionKey:false,
-    timestamps:true
-});
-
-const SavingsAccount= mongoose.model("saving", SavingsAccountSchema);
 
 // ---------------------------------------->>>>
 // get, getAll, post, patch, delete
@@ -302,21 +258,6 @@ app.delete("/saving/:id", async(req,res)=>{
 
 
 // FixedAccount ---------------------------------------------------------------------------------
-
-const FixedAccountSchema= new mongoose.Schema({
-    "account_number": {required:true, type:Number, unique:true},
-    "balance":{required:true, type: Number},
-    "interestRate":{type:Number, required:true},
-    "startDate":{type:String, required:true},
-    "maturityDate": {type:String, required:true},
-    "Master_Id": {type:mongoose.Schema.Types.ObjectId, ref:"master", required:true}
-},
-{
-    versionKey:false,
-    timestamps:true
-});
-
-const FixedAccount= mongoose.model("fixed", FixedAccountSchema);
 
 // ---------------------------------------->>>>
 // get, getAll, post, patch, delete
